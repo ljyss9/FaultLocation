@@ -4,11 +4,14 @@
 
 
 import javax.swing.*;
-import java.awt.*;
+
+import java.awt.TextArea;
+import java.awt.FileDialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.util.HashSet;
+import java.util.*;
+import java.util.ArrayList;
 
 public class MainFrame {
 
@@ -36,6 +39,7 @@ public class MainFrame {
     private JMenuItem slice;
     private JMenuItem faultLocation;
 
+    public static final int i = 1;
 
     public HashSet<String> getKeyWords() {
         return keyWords;
@@ -215,11 +219,8 @@ public class MainFrame {
                         */
                         text1.append(line + "\n");
                     }
-                } catch (FileNotFoundException e1) {
-                    // 抛出文件路径找不到异常
-                    e1.printStackTrace();
                 } catch (IOException e1) {
-                    // 抛出IO异常
+                    // 抛出文件路径找不到异常
                     e1.printStackTrace();
                 }
 
@@ -284,7 +285,23 @@ public class MainFrame {
             public void actionPerformed(ActionEvent e) {
                 // TODO Auto-generated method stub
                 text2.append(">>>开始执行精简用例 ...\n");
+                selectSample ss = new selectSample( i + "");
+                ss.accAll("v" + i);
+                System.out.println("ALL testcase"+ ss.selectSa.size());
+                List<Integer> tt = new ArrayList<>(ss.selectSa);
 
+                Collections.sort(tt);
+                String writeName = "Sample_"+i;
+                try{
+                    FileWriter fw = new FileWriter(writeName);
+                    for(int j :tt)
+                    {
+                        fw.write(j+"\n");
+                    }
+                    fw.close();
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                }
                 text2.append("完成精简用例执行\n");
             }});
     }
