@@ -3,30 +3,12 @@
  */
 
 
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.FileDialog;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Panel;
-import java.awt.TextArea;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.HashSet;
-
-import javax.swing.*;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.text.*;
 
 public class MainFrame {
 
@@ -55,17 +37,90 @@ public class MainFrame {
     private JMenuItem faultLocation;
 
 
+    public HashSet<String> getKeyWords() {
+        return keyWords;
+    }
+
+    public JFrame getFrame() {
+        return frame;
+    }
+
+    public JMenuBar getBar() {
+        return bar;
+    }
+
+    public JMenu getJmenufile() {
+        return jmenufile;
+    }
+
+    public JMenu getJmenuproject() {
+        return jmenuproject;
+    }
+
+    public JMenuItem getFile_open() {
+        return file_open;
+    }
+
+    public JMenuItem getFile_save() {
+        return file_save;
+    }
+
+    public JMenuItem getExit() {
+        return exit;
+    }
+
+    public JMenuItem getExectTestCase() {
+        return exectTestCase;
+    }
+
+    public JMenuItem getSelectTestcase() {
+        return selectTestcase;
+    }
+
+    public JMenuItem getSlice() {
+        return slice;
+    }
+
+    public JMenuItem getFaultLocation() {
+        return faultLocation;
+    }
+
+    public TextArea getText1() {
+        return text1;
+    }
+
+    public TextArea getText2() {
+        return text2;
+    }
+
+    public TextArea getText3() {
+        return text3;
+    }
+
+    public FileDialog getOpenDia() {
+        return openDia;
+    }
+
+    public FileDialog getSaveDia() {
+        return saveDia;
+    }
 
     private TextArea text1;
     private TextArea text2;
     private TextArea text3;
     private FileDialog openDia, saveDia;
-    private static final int LENGTH = 900;
+    private static final int LENGTH = 800;
     private static final int WIDTH = 700;
 
     // 设置文本区域来保存打开的数据
 
-    public MainFrame() {
+    private static MainFrame mainFrame = new MainFrame();
+
+    public static MainFrame getInstance(){
+        return  mainFrame;
+    }
+
+    private  MainFrame() {
 
 
         frame = new JFrame("缺陷定位");
@@ -73,12 +128,12 @@ public class MainFrame {
         text2 = new TextArea();
         text3 = new TextArea();
 
-        JScrollPane scrollPane = new JScrollPane(text1);
-        frame.getContentPane().add(scrollPane);
-        JSplitPane jsplitPanev = new JSplitPane(JSplitPane.VERTICAL_SPLIT,false,text1,text3);
+
+        JSplitPane jsplitPanev = new JSplitPane(JSplitPane.VERTICAL_SPLIT,false,text1,text2);
         jsplitPanev.setDividerLocation(500);
         frame.getContentPane().add(jsplitPanev);
 
+        JPopupMenu.setDefaultLightWeightPopupEnabled(false);
         bar = new JMenuBar();
         jmenufile = new JMenu("文件");
         jmenuproject = new JMenu("项目分析");
@@ -115,11 +170,12 @@ public class MainFrame {
         myEvent_openfile();
         myEvent_exit();
         myEvent_execTestCase();
+        myEvent_simplyTestCase();
     }
 
     // 导入文件事件
     private void myEvent_openfile() {
-        /*Style style = text1.getStyledDocument().addStyle(null, null);
+    /*    Style style = text1.getStyledDocument().addStyle(null, null);
         StyleConstants.setFontFamily(style, "楷体");
         StyleConstants.setFontSize(style, 14);
         final Style simple = text1.addStyle("simple",style);
@@ -127,7 +183,7 @@ public class MainFrame {
         final String changeLine = "\n";
         StyleConstants.setForeground(keyWord, Color.blue);
         StyleConstants.setBold(keyWord , true);
-        */
+    */
 
         file_open.addActionListener(new ActionListener() {
 
@@ -148,7 +204,7 @@ public class MainFrame {
                     BufferedReader buread = new BufferedReader(new FileReader(file));
                     String line = null;
                     while ((line = buread.readLine()) != null) {
-                        /*String lines[] = line.split(" ");
+                      /*  String lines[] = line.split(" ");
                         for(String temp : lines) {
                             if(keyWords.contains(temp))
                                 docs.insertString(docs.getLength(), temp + " ", keyWord);
@@ -172,6 +228,7 @@ public class MainFrame {
         });
     }
 
+    //程序退出
     private void myEvent_exit(){
         exit.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent arg0) {
@@ -194,26 +251,46 @@ public class MainFrame {
 
                 ProcessBuilder pb = new ProcessBuilder("./"+fileName);
                 pb.directory(new File(dirPath));
-                String s;
+                String s = "";
+                String sbf = "";
+                text2.append(">>>开始执行测试用例 ...\n");
                 try{
                     Process p = pb.start();
                     BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
                     BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
                     while ((s = stdInput.readLine()) != null) {
                         //text2.append(s+"\n");
+                        sbf = s;
                     }
                     while ((s = stdError.readLine()) != null) {
                         System.out.println("Error: " + s);
                     }
+
+                    p.waitFor();
                 }catch(Exception exc){
                     exc.printStackTrace();
                 }
+                String ss[] = sbf.split(" ");
+                text2.append("完成"+ss[2] + "测试用例的执行\n");
             }});
     }
 
 
+    //执行精简用例，调用shell脚本
+    private void myEvent_simplyTestCase(){
+        selectTestcase.addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO Auto-generated method stub
+                text2.append(">>>开始执行精简用例 ...\n");
+
+                text2.append("完成精简用例执行\n");
+            }});
+    }
+
     public static void  main(String args[]){
-        MainFrame mainframe = new MainFrame();
+
 
     }
 
