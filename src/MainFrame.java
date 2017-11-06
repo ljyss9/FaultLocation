@@ -1,0 +1,220 @@
+/**
+ * Created by ljy on 2017/10/30.
+ */
+
+
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FileDialog;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Panel;
+import java.awt.TextArea;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashSet;
+
+import javax.swing.*;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.text.*;
+
+public class MainFrame {
+
+
+    private final HashSet<String> keyWords = new HashSet<String>(){{add("auto");
+        add("break");add("case");add("char");add("const");add("continue");
+        add("default");add("do");add("double");add("else");add("enum");add("extern");
+        add("float");add("for");add("goto");add("if");add("int");add("long");add("register");
+        add("return");add("short");add("signed");add("sizeof");add("static");
+        add("struct");add("switch");add("typedef");add("union");add("unsigned");
+        add("void");add("volatile");add("while");}};
+
+
+    private JFrame frame;
+    private JMenuBar bar;
+    private JMenu jmenufile;
+    private JMenu jmenuproject;
+
+    private JMenuItem file_open;
+    private JMenuItem file_save;
+    private JMenuItem exit;
+    // private JMenuItem importTestCase;
+    private JMenuItem exectTestCase;
+    private JMenuItem selectTestcase;
+    private JMenuItem slice;
+    private JMenuItem faultLocation;
+
+
+
+    private TextArea text1;
+    private TextArea text2;
+    private TextArea text3;
+    private FileDialog openDia, saveDia;
+    private static final int LENGTH = 900;
+    private static final int WIDTH = 700;
+
+    // 设置文本区域来保存打开的数据
+
+    public MainFrame() {
+
+
+        frame = new JFrame("缺陷定位");
+        text1 = new TextArea();
+        text2 = new TextArea();
+        text3 = new TextArea();
+
+        JScrollPane scrollPane = new JScrollPane(text1);
+        frame.getContentPane().add(scrollPane);
+        JSplitPane jsplitPanev = new JSplitPane(JSplitPane.VERTICAL_SPLIT,false,text1,text3);
+        jsplitPanev.setDividerLocation(500);
+        frame.getContentPane().add(jsplitPanev);
+
+        bar = new JMenuBar();
+        jmenufile = new JMenu("文件");
+        jmenuproject = new JMenu("项目分析");
+        file_open = new JMenuItem("打开");
+        file_save = new JMenuItem("保存");
+        // importTestCase = new JMenuItem("导入测试用例");
+        exectTestCase = new JMenuItem("执行测试用例");
+        selectTestcase = new JMenuItem("精简测试用例");
+        slice = new JMenuItem("切片化简程序");
+        faultLocation = new JMenuItem("缺陷定位");
+
+        exit = new JMenuItem("退出");
+        // jmenuproject.add(importTestCase);
+        jmenuproject.add(exectTestCase);
+        jmenuproject.add(selectTestcase);
+        jmenuproject.add(slice);
+        jmenuproject.add(faultLocation);
+        jmenufile.add(file_open);
+        jmenufile.add(file_save);
+        jmenufile.add(exit);
+
+
+        bar.add(jmenufile);
+        bar.add(jmenuproject);
+        //frame.add(text3);
+        //frame.add(panel);
+        frame.setJMenuBar(bar);
+        frame.setVisible(true);
+        openDia = new FileDialog(frame, "我的打开", FileDialog.LOAD);
+        saveDia = new FileDialog(frame, "我的保存", FileDialog.SAVE);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setBounds(100 , 100 , LENGTH , WIDTH);
+
+        myEvent_openfile();
+        myEvent_exit();
+        myEvent_execTestCase();
+    }
+
+    // 导入文件事件
+    private void myEvent_openfile() {
+        /*Style style = text1.getStyledDocument().addStyle(null, null);
+        StyleConstants.setFontFamily(style, "楷体");
+        StyleConstants.setFontSize(style, 14);
+        final Style simple = text1.addStyle("simple",style);
+        final Style keyWord = text1.addStyle("keyWord",style);
+        final String changeLine = "\n";
+        StyleConstants.setForeground(keyWord, Color.blue);
+        StyleConstants.setBold(keyWord , true);
+        */
+
+        file_open.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                // TODO Auto-generated method stub
+                openDia.setVisible(true);
+
+                String dirPath = openDia.getDirectory();
+                String fileName = openDia.getFile();
+                if (dirPath == null || fileName == null) {
+                    return;
+                } else
+                    text1.setText(null);
+
+                File file = new File(dirPath, fileName);
+                try {
+                    BufferedReader buread = new BufferedReader(new FileReader(file));
+                    String line = null;
+                    while ((line = buread.readLine()) != null) {
+                        /*String lines[] = line.split(" ");
+                        for(String temp : lines) {
+                            if(keyWords.contains(temp))
+                                docs.insertString(docs.getLength(), temp + " ", keyWord);
+                            else
+                                docs.insertString(docs.getLength(),temp + " ",simple);
+                        }
+                        docs.insertString(docs.getLength(),changeLine,simple);
+                        */
+                        text1.append(line + "\n");
+                    }
+                } catch (FileNotFoundException e1) {
+                    // 抛出文件路径找不到异常
+                    e1.printStackTrace();
+                } catch (IOException e1) {
+                    // 抛出IO异常
+                    e1.printStackTrace();
+                }
+
+            }
+
+        });
+    }
+
+    private void myEvent_exit(){
+        exit.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+                System.exit(0);
+            }
+        });
+    }
+
+    //执行测试用例，调用shell脚本
+    private void myEvent_execTestCase(){
+        exectTestCase.addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO Auto-generated method stub
+                openDia.setVisible(true);
+
+                String dirPath = openDia.getDirectory();
+                String fileName = openDia.getFile();
+
+                ProcessBuilder pb = new ProcessBuilder("./"+fileName);
+                pb.directory(new File(dirPath));
+                String s;
+                try{
+                    Process p = pb.start();
+                    BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+                    while ((s = stdInput.readLine()) != null) {
+                        //text2.append(s+"\n");
+                    }
+                    while ((s = stdError.readLine()) != null) {
+                        System.out.println("Error: " + s);
+                    }
+                }catch(Exception exc){
+                    exc.printStackTrace();
+                }
+            }});
+    }
+
+
+    public static void  main(String args[]){
+        MainFrame mainframe = new MainFrame();
+
+    }
+
+}
