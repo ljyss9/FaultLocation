@@ -35,9 +35,19 @@ public class MainFrame {
     private JMenuItem exit;
     // private JMenuItem importTestCase;
     private JMenuItem exectTestCase;
+    private JMenuItem getTestCasePath;
     private JMenuItem selectTestcase;
     private JMenuItem slice;
     private JMenuItem faultLocation;
+    private TextArea text1;
+    private TextArea text2;
+    private TextArea text3;
+    private FileDialog openDia, saveDia;
+    private static final int LENGTH = 800;
+    private static final int WIDTH = 700;
+    private static final String file1 = "/home/ljy/FaultLocation/outputs/testcase_original";
+    private static final String file2 = "/home/ljy/FaultLocation/outputs/testcase";
+
 
     public static final int i = 1;
 
@@ -109,12 +119,6 @@ public class MainFrame {
         return saveDia;
     }
 
-    private TextArea text1;
-    private TextArea text2;
-    private TextArea text3;
-    private FileDialog openDia, saveDia;
-    private static final int LENGTH = 800;
-    private static final int WIDTH = 700;
 
     // 设置文本区域来保存打开的数据
 
@@ -146,12 +150,14 @@ public class MainFrame {
         // importTestCase = new JMenuItem("导入测试用例");
         exectTestCase = new JMenuItem("执行测试用例");
         selectTestcase = new JMenuItem("精简测试用例");
+        getTestCasePath = new JMenuItem("获得用例执行路径");
         slice = new JMenuItem("切片化简程序");
         faultLocation = new JMenuItem("缺陷定位");
 
         exit = new JMenuItem("退出");
         // jmenuproject.add(importTestCase);
         jmenuproject.add(exectTestCase);
+        jmenuproject.add(getTestCasePath);
         jmenuproject.add(selectTestcase);
         jmenuproject.add(slice);
         jmenuproject.add(faultLocation);
@@ -272,12 +278,16 @@ public class MainFrame {
                     exc.printStackTrace();
                 }
                 String ss[] = sbf.split(" ");
-                text2.append("完成"+ss[2] + "测试用例的执行\n");
+                text2.append("完成"+ss[2] + "测试用例的执行，");
+                ShowDiff showDiff = new ShowDiff();
+                int wrong = showDiff.getDiff(file1,file2, i );
+                int right = Integer.parseInt(ss[2]) - wrong;
+                text2.append("其中成功用例:"+ right +" 失败用例："+wrong);
             }});
     }
 
 
-    //执行精简用例，调用shell脚本
+    //执行精简用例
     private void myEvent_simplyTestCase(){
         selectTestcase.addActionListener(new ActionListener(){
 

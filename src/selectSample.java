@@ -28,7 +28,7 @@ public class selectSample {
 
     public selectSample(String version){
         failtestNum = new ArrayList<>();
-        String fileName  = "../outputs/DiffTestCase/DiffSourToV";
+        String fileName  = "/home/ljy/FaultLocation/outputs/DiffSourToV";
         fileName = fileName + version;
         try {
             String encoding="GBK";

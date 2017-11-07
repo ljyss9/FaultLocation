@@ -1,4 +1,4 @@
-package PACKAGE_NAME;
+
 
 /**
  * Created by ljy on 17-11-6.
@@ -12,8 +12,9 @@ import java.io.InputStreamReader;
 
 //this is get the different between two file
 public class ShowDiff {
-	public void  getDiff(String fileName1,String fileName2,int acc ){
-		 try {
+	public int  getDiff(String fileName1,String fileName2,int acc ){
+		int ret = 0;
+		try {
             String encoding="GBK";
             File file1=new File(fileName1);
             File file2 = new File(fileName2);
@@ -25,7 +26,7 @@ public class ShowDiff {
                     new FileInputStream(file2),encoding);
                 BufferedReader bufferedReader2 = new BufferedReader(read2);
            //     FileOutputStream outSTr = new FileOutputStream(new File("runTrace.shs"));   
-                FileWriter fw = new FileWriter("DiffSourToV"+acc);
+                FileWriter fw = new FileWriter("/home/ljy/FaultLocation/outputs/DiffSourToV"+acc);
                 String lineTxt1 = null,lineTxt2 = null;
                 int i = 0,mark = 0;
                 while((lineTxt1 = bufferedReader1.readLine()) != null && 
@@ -38,6 +39,7 @@ public class ShowDiff {
                	 		{
                	 			fw.write(i+"\n");
                	 			mark = i;
+               	 			ret++;
                	 		}
                	 		i++;
                	 		while(!lineTxt2.startsWith("testcase")){
@@ -49,6 +51,7 @@ public class ShowDiff {
                	 		{
                	 			fw.write(i+"\n");
                	 			mark = i;
+               	 			ret++;
                	 		}
                	 		i++;
            	 		while(!lineTxt1.startsWith("testcase")){
@@ -61,6 +64,7 @@ public class ShowDiff {
                	 		{
                 			fw.write(i+"\n");
                 			mark = i;
+                			ret++;
                	 		}
                	 		
                	 	}
@@ -70,12 +74,14 @@ public class ShowDiff {
                 read2.close();
                 fw.close();
             }else{
-           	 System.out.println("cannot find file "+fileName1);
+            	String temp = file1.exists() ?  fileName2 :fileName1;
+           	 	System.out.println("cannot find file " + temp);
             }
 		 } catch (Exception e) {
 			 System.out.println("error");
 			 e.printStackTrace();
 		 }
+		 return ret;
 	}
 //	public static void main(String args[]){
 //		ShowDiff sd = new ShowDiff();
