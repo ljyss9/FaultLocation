@@ -47,6 +47,8 @@ public class MainFrame {
     private static final int WIDTH = 700;
     private static final String file1 = "/home/ljy/FaultLocation/outputs/testcase_original";
     private static final String file2 = "/home/ljy/FaultLocation/outputs/testcase";
+    private static final int TESTCASENUM = 1052;
+
 
 
     public static final int i = 1;
@@ -181,6 +183,7 @@ public class MainFrame {
         myEvent_exit();
         myEvent_execTestCase();
         myEvent_simplyTestCase();
+        myEvent_getExecPath();
     }
 
     // 导入文件事件
@@ -282,7 +285,7 @@ public class MainFrame {
                 ShowDiff showDiff = new ShowDiff();
                 int wrong = showDiff.getDiff(file1,file2, i );
                 int right = Integer.parseInt(ss[2]) - wrong;
-                text2.append("其中成功用例:"+ right +" 失败用例："+wrong);
+                text2.append("其中成功用例:"+ right +" 失败用例："+wrong + "\n");
             }});
     }
 
@@ -313,6 +316,49 @@ public class MainFrame {
                     ex.printStackTrace();
                 }
                 text2.append("完成精简用例执行\n");
+            }});
+    }
+
+    //执行测试用例，调用shell脚本
+    private void myEvent_getExecPath(){
+        getTestCasePath.addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO Auto-generated method stub
+                openDia.setVisible(true);
+
+                String dirPath = openDia.getDirectory();
+                String fileName = openDia.getFile();
+
+                ProcessBuilder pb = new ProcessBuilder("./"+fileName);
+                pb.directory(new File(dirPath));
+                String s = "";
+
+                text2.append(">>>开始获得用例执行路径 ...\n");
+                try{
+                    Process p = pb.start();
+                    BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+                    while ((s = stdInput.readLine()) != null) {
+                        text2.append(s + "\n");
+
+                        System.out.println(s);
+
+                    }
+                    while ((s = stdError.readLine()) != null) {
+                        System.out.println("Error: " + s);
+                    }
+
+                }catch(Exception exc){
+                    exc.printStackTrace();
+                }
+                getLine gl = new getLine();
+                String filePrefix = "/home/ljy/FaultLocation/trace/tot_info_tc";
+                for(int i = 1;i <=TESTCASENUM;i++){
+                    gl.getExec((filePrefix + i + ".c.gcov"),i);
+                }
+                text2.append("完成执行用例执行路径 ...\n");
             }});
     }
 

@@ -19,7 +19,7 @@ import java.util.Set;
 public class selectSample {
     private static final int rank = 25;
     private static final int max = 50;
-    private static final int testcase = 1606;
+    private static final int testcase = 1052;
     private static final int Ver = 30;
     public ArrayList<Integer> failtestNum;
     public Set<Integer> selectSa;
@@ -56,8 +56,8 @@ public class selectSample {
     public double accSame(String name,String versionName,String fail,String test){
         ArrayList<Integer> traceFail = new ArrayList<>();
         ArrayList<Integer> traceTest = new ArrayList<>();
-        String fileName1  = "./../traces/"+versionName+"/path/"+name + fail+"Path";
-        String fileName2 = "./../traces/"+versionName+"/path/"+name + test+"Path";
+        String fileName1  = "/home/ljy/FaultLocation/trace/Path/"+name + fail+"Path";
+        String fileName2 = "/home/ljy/FaultLocation/trace/Path/"+name + test + "Path";
         try {
             String encoding="GBK";
             File file=new File(fileName1);
@@ -117,7 +117,7 @@ public class selectSample {
 
                 }
                 else{
-                    temp = accSame("tcas_Tc",versionName,failtestNum.get(i)+"",j+"");
+                    temp = accSame("tot_info_Tc",versionName,failtestNum.get(i)+"",j+"");
                     storeNum.put(j, temp);
                 }
             }
