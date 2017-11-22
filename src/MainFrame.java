@@ -4,7 +4,6 @@
 
 
 import javax.swing.*;
-
 import java.awt.TextArea;
 import java.awt.FileDialog;
 import java.awt.event.ActionEvent;
@@ -12,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.*;
 import java.util.ArrayList;
+import location.*;
 
 public class MainFrame {
 
@@ -29,6 +29,7 @@ public class MainFrame {
     private JMenuBar bar;
     private JMenu jmenufile;
     private JMenu jmenuproject;
+    private JMenu jresultShow;
 
     private JMenuItem file_open;
     private JMenuItem file_save;
@@ -38,7 +39,16 @@ public class MainFrame {
     private JMenuItem getTestCasePath;
     private JMenuItem selectTestcase;
     private JMenuItem slice;
-    private JMenuItem faultLocation;
+    private JMenu faultLocation;
+    private JMenuItem baseFaultLocation;
+    private JMenuItem testFaultLocation;
+    private JMenuItem sliceFaultLocation;
+    private JMenuItem bothFaultLocation;
+    private JMenuItem testCaseResult;
+    private JMenuItem execPathResult;
+    private JMenuItem succTestcaseResult;
+    private JMenuItem sliceResult;
+    private JMenuItem locationResult;
     private TextArea text1;
     private TextArea text2;
     private TextArea text3;
@@ -48,7 +58,7 @@ public class MainFrame {
     private static final String file1 = "/home/ljy/FaultLocation/outputs/testcase_original";
     private static final String file2 = "/home/ljy/FaultLocation/outputs/testcase";
     private static final int TESTCASENUM = 1052;
-
+    private static final int line = 406;
 
 
     public static final int i = 1;
@@ -154,8 +164,26 @@ public class MainFrame {
         selectTestcase = new JMenuItem("精简测试用例");
         getTestCasePath = new JMenuItem("获得用例执行路径");
         slice = new JMenuItem("切片化简程序");
-        faultLocation = new JMenuItem("缺陷定位");
-
+        faultLocation = new JMenu("缺陷定位");
+        baseFaultLocation = new JMenuItem("程序频谱技术缺陷定位");
+        testFaultLocation = new JMenuItem("测试用例改进缺陷定位");
+        sliceFaultLocation = new JMenuItem("切片技术改进缺陷定位");
+        bothFaultLocation = new JMenuItem("SIFL方法缺陷定位");
+        jresultShow = new JMenu("结果展示");
+        testCaseResult = new JMenuItem("测试用例执行结果");
+        execPathResult = new JMenuItem("用例路径结果");
+        succTestcaseResult = new JMenuItem("用例筛选结果");
+        sliceFaultLocation = new JMenuItem("切片化程序结果");
+        locationResult = new JMenuItem("缺陷定位结果");
+        jresultShow.add(testCaseResult);
+        jresultShow.add(execPathResult);
+        jresultShow.add(succTestcaseResult);
+        jresultShow.add(sliceFaultLocation);
+        jresultShow.add(locationResult);
+        faultLocation.add(baseFaultLocation);
+        faultLocation.add(testFaultLocation);
+        faultLocation.add(sliceFaultLocation);
+        faultLocation.add(bothFaultLocation);
         exit = new JMenuItem("退出");
         // jmenuproject.add(importTestCase);
         jmenuproject.add(exectTestCase);
@@ -170,6 +198,7 @@ public class MainFrame {
 
         bar.add(jmenufile);
         bar.add(jmenuproject);
+        bar.add(jresultShow);
         //frame.add(text3);
         //frame.add(panel);
         frame.setJMenuBar(bar);
@@ -184,6 +213,11 @@ public class MainFrame {
         myEvent_execTestCase();
         myEvent_simplyTestCase();
         myEvent_getExecPath();
+        myEvent_showResult();
+        myEvent_execAccSupi();
+        myEvent_sliceAccSupi();
+        myEvent_bothAccSupi();
+        myEvent_sampleAccSupi();
     }
 
     // 导入文件事件
@@ -362,6 +396,207 @@ public class MainFrame {
             }});
     }
 
+    //展示执行结果
+    private void myEvent_showResult(){
+        testCaseResult.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+                new ResultFrame();
+            }
+        });
+    }
+
+
+    private void myEvent_execAccSupi(){
+        baseFaultLocation.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+                int store[] = new int[300];
+
+		        int j = 0;
+		        String fileName  = "/home/ljy/FaultLocation/DiffSourToV";
+		        fileName = fileName + i+"";
+		        text2.append(">>>开始频谱技术定位缺陷\n");
+			    try {
+	                String encoding="GBK";
+	                File file=new File(fileName);
+	                if(file.isFile() && file.exists()){
+	                    InputStreamReader read = new InputStreamReader(
+	                    new FileInputStream(file),encoding);
+	                    BufferedReader bufferedReader = new BufferedReader(read);
+	                    String lineTxt = null;
+	                    while((lineTxt = bufferedReader.readLine()) != null){
+	                	 	store[j] = Integer.parseInt(lineTxt);
+	                	 	j++;
+	                 }
+	                 read.close();
+
+	        }else{
+	         System.out.println("cannot find file");
+	     }
+	     } catch (Exception e) {
+	         System.out.println("occur error when reading file");
+	         e.printStackTrace();
+	     }
+			int succNum [] = new int[line + 1];
+			int failNum [] = new int[line + 1];
+			double result[] = new double[line+1];
+			AccSupi as = new AccSupi(store,j);
+			as.accNum("/home/ljy/FaultLocation/trace/Path/tot_info_Tc", failNum, succNum);
+			as.accResult(failNum, succNum, result);
+        try{
+            as.Rank(result,200);
+		}catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+            text2.append(">>>缺陷定位完成\n");
+            }
+
+        });
+    }
+
+    private void myEvent_sampleAccSupi(){
+        testFaultLocation.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+                int store[] = new int[300];
+
+                int j = 0;
+                String fileName  = "/home/ljy/FaultLocation/DiffSourToV";
+                fileName = fileName + i+"";
+                text2.append(">>>开始用例改进技术定位缺陷\n");
+                try {
+                    String encoding="GBK";
+                    File file=new File(fileName);
+                    if(file.isFile() && file.exists()){
+                        InputStreamReader read = new InputStreamReader(
+                                new FileInputStream(file),encoding);
+                        BufferedReader bufferedReader = new BufferedReader(read);
+                        String lineTxt = null;
+                        while((lineTxt = bufferedReader.readLine()) != null){
+                            store[j] = Integer.parseInt(lineTxt);
+                            j++;
+                        }
+                        read.close();
+
+                    }else{
+                        System.out.println("cannot find file");
+                    }
+                } catch (Exception e) {
+                    System.out.println("occur error when reading file");
+                    e.printStackTrace();
+                }
+                int succNum [] = new int[line + 1];
+                int failNum [] = new int[line + 1];
+                double result[] = new double[line+1];
+                useSliceAccSupi as = new useSliceAccSupi(store,j);
+                as.accNum("/home/ljy/FaultLocation/trace/Path/tot_info_Tc", failNum, succNum);
+                as.accResult(failNum, succNum, result);
+                try{
+                    as.Rank(result,200);
+                }catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
+                text2.append(">>>缺陷定位完成\n");
+            }
+
+        });
+    }
+
+    private void myEvent_sliceAccSupi(){
+        sliceFaultLocation.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+                int store[] = new int[300];
+
+                int j = 0;
+                String fileName  = "/home/ljy/FaultLocation/DiffSourToV";
+                fileName = fileName + i+"";
+                text2.append(">>>开始切片改进技术定位缺陷\n");
+                try {
+                    String encoding="GBK";
+                    File file=new File(fileName);
+                    if(file.isFile() && file.exists()){
+                        InputStreamReader read = new InputStreamReader(
+                                new FileInputStream(file),encoding);
+                        BufferedReader bufferedReader = new BufferedReader(read);
+                        String lineTxt = null;
+                        while((lineTxt = bufferedReader.readLine()) != null){
+                            store[j] = Integer.parseInt(lineTxt);
+                            j++;
+                        }
+                        read.close();
+
+                    }else{
+                        System.out.println("cannot find file");
+                    }
+                } catch (Exception e) {
+                    System.out.println("occur error when reading file");
+                    e.printStackTrace();
+                }
+                int succNum [] = new int[line + 1];
+                int failNum [] = new int[line + 1];
+                double result[] = new double[line+1];
+                useSamAccSupi as = new useSamAccSupi(store,j);
+                as.accNum("/home/ljy/FaultLocation/trace/Path/tot_info_Tc", failNum, succNum);
+                as.accResult(failNum, succNum, result);
+                try{
+                    as.Rank(result,200);
+                }catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
+                text2.append(">>>缺陷定位完成\n");
+            }
+
+        });
+    }
+
+    private void myEvent_bothAccSupi(){
+        bothFaultLocation.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+                int store[] = new int[300];
+
+                int j = 0;
+                String fileName  = "/home/ljy/FaultLocation/DiffSourToV";
+                fileName = fileName + i+"";
+                text2.append(">>>开始SIFL技术定位缺陷\n");
+                try {
+                    String encoding="GBK";
+                    File file=new File(fileName);
+                    if(file.isFile() && file.exists()){
+                        InputStreamReader read = new InputStreamReader(
+                                new FileInputStream(file),encoding);
+                        BufferedReader bufferedReader = new BufferedReader(read);
+                        String lineTxt = null;
+                        while((lineTxt = bufferedReader.readLine()) != null){
+                            store[j] = Integer.parseInt(lineTxt);
+                            j++;
+                        }
+                        read.close();
+
+                    }else{
+                        System.out.println("cannot find file");
+                    }
+                } catch (Exception e) {
+                    System.out.println("occur error when reading file");
+                    e.printStackTrace();
+                }
+                int succNum [] = new int[line + 1];
+                int failNum [] = new int[line + 1];
+                double result[] = new double[line+1];
+                useBothAccSupi as = new useBothAccSupi(store,j);
+                as.accNum("/home/ljy/FaultLocation/trace/Path/tot_info_Tc", failNum, succNum);
+                as.accResult(failNum, succNum, result);
+                try{
+                    as.Rank(result,200);
+                }catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
+                text2.append(">>>缺陷定位完成\n");
+            }
+
+        });
+    }
     public static void  main(String args[]){
 
 
