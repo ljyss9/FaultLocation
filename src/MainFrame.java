@@ -171,7 +171,7 @@ public class MainFrame {
         bothFaultLocation = new JMenuItem("SIFL方法缺陷定位");
         jresultShow = new JMenu("结果展示");
         testCaseResult = new JMenuItem("测试用例执行结果");
-        execPathResult = new JMenuItem("用例路径结果");
+        execPathResult = new JMenuItem("用例运行路径结果");
         succTestcaseResult = new JMenuItem("用例筛选结果");
         sliceFaultLocation = new JMenuItem("切片化程序结果");
         locationResult = new JMenuItem("缺陷定位结果");
@@ -218,6 +218,7 @@ public class MainFrame {
         myEvent_sliceAccSupi();
         myEvent_bothAccSupi();
         myEvent_sampleAccSupi();
+        myEvent_showExePath();
     }
 
     // 导入文件事件
@@ -401,6 +402,14 @@ public class MainFrame {
         testCaseResult.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent arg0) {
                 new ResultFrame();
+            }
+        });
+    }
+
+    private void myEvent_showExePath(){
+        execPathResult.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+                new executePathFrame();
             }
         });
     }
