@@ -61,6 +61,8 @@ public class MainFrame {
     private static final int line = 406;
 
 
+    private double finalResult[];
+
     public static final int i = 1;
 
     public HashSet<String> getKeyWords() {
@@ -219,6 +221,7 @@ public class MainFrame {
         myEvent_bothAccSupi();
         myEvent_sampleAccSupi();
         myEvent_showExePath();
+        myEvent_showRank();
     }
 
     // 导入文件事件
@@ -414,6 +417,15 @@ public class MainFrame {
         });
     }
 
+    private void myEvent_showRank(){
+        locationResult.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+                if(finalResult != null && finalResult.length !=0 ){
+                    new finalResultShow(finalResult);
+                }
+            }
+        });
+    }
 
     private void myEvent_execAccSupi(){
         baseFaultLocation.addActionListener(new ActionListener(){
@@ -451,8 +463,10 @@ public class MainFrame {
 			AccSupi as = new AccSupi(store,j);
 			as.accNum("/home/ljy/FaultLocation/trace/Path/tot_info_Tc", failNum, succNum);
 			as.accResult(failNum, succNum, result);
+			finalResult = new double[result.length];
+			finalResult = Arrays.copyOf(result,result.length);
         try{
-            as.Rank(result,200);
+            as.Rank(result);
 		}catch(Exception e)
         {
             e.printStackTrace();
@@ -499,8 +513,10 @@ public class MainFrame {
                 useSliceAccSupi as = new useSliceAccSupi(store,j);
                 as.accNum("/home/ljy/FaultLocation/trace/Path/tot_info_Tc", failNum, succNum);
                 as.accResult(failNum, succNum, result);
+                finalResult = new double[result.length];
+                Arrays.copyOf(result,result.length);
                 try{
-                    as.Rank(result,200);
+                    as.Rank(result);
                 }catch(Exception e)
                 {
                     e.printStackTrace();
@@ -547,8 +563,10 @@ public class MainFrame {
                 useSamAccSupi as = new useSamAccSupi(store,j);
                 as.accNum("/home/ljy/FaultLocation/trace/Path/tot_info_Tc", failNum, succNum);
                 as.accResult(failNum, succNum, result);
+                finalResult = new double[result.length];
+                Arrays.copyOf(result,result.length);
                 try{
-                    as.Rank(result,200);
+                    as.Rank(result);
                 }catch(Exception e)
                 {
                     e.printStackTrace();
@@ -596,7 +614,7 @@ public class MainFrame {
                 as.accNum("/home/ljy/FaultLocation/trace/Path/tot_info_Tc", failNum, succNum);
                 as.accResult(failNum, succNum, result);
                 try{
-                    as.Rank(result,200);
+                    as.Rank(result);
                 }catch(Exception e)
                 {
                     e.printStackTrace();
