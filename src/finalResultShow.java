@@ -3,6 +3,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 import java.io.BufferedReader;
 import java.io.File;
@@ -54,6 +56,7 @@ public class finalResultShow {
         initStyle();
         showResult();
         frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        myEvent_showResult();
     }
 
     public Map<Integer,Integer> initColor(double result[]){
@@ -157,5 +160,12 @@ public class finalResultShow {
             e.printStackTrace();
         }
     }
-
+    private void myEvent_showResult(){
+        rank.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new rankShow();
+            }
+        });
+    }
 }
