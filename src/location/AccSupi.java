@@ -100,10 +100,11 @@ public class AccSupi {
 	
 
 	
-	public void Rank(double [] result,int num) throws IOException
+	public void Rank(double [] result) throws IOException
 	{
 		Map<Integer,Double> store = new HashMap<>();
-		for(int i = 1;i <= result.length;i++)
+		//System.out.println(result.length);
+		for(int i = 1;i < result.length;i++)
 			store.put(i, result[i]);
 		List<Map.Entry<Integer,Double>> infoIds =
 			    new ArrayList<Map.Entry<Integer,Double>>(store.entrySet());
@@ -114,21 +115,14 @@ public class AccSupi {
 		    }
 		}); 
 		int i;
-		String writeName = "Top"+String.valueOf(num);
+		String writeName = "/home/ljy/FaultLocation/outputs/Rank";
 		
         FileWriter fw = new FileWriter(writeName);
-		for( i = 0;i < num;i++){
-			System.out.println(infoIds.get(i).getKey()+" : "+ infoIds.get(i).getValue());
-            		fw.write(infoIds.get(i).getKey()+" : "+ infoIds.get(i).getValue()+"\n");
-		}
-		while(i < line - 1 && infoIds.get(i-1).getValue() - infoIds.get(i).getValue()< 0.0000000001)
-		{
+		for( i = 0;i < infoIds.size();i++){
 			System.out.println(infoIds.get(i).getKey()+" : "+ infoIds.get(i).getValue());
 			fw.write(infoIds.get(i).getKey()+" : "+ infoIds.get(i).getValue()+"\n");
-			i++;
-			if(infoIds.get(i).getValue() - 0 <0.0000000001 || infoIds.get(i).getValue() - (-1) <0.0000000001)
-				break;
 		}
+
             fw.close();
 		
         

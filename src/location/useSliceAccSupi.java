@@ -124,7 +124,7 @@ public class useSliceAccSupi extends AccSupi{
 			as.accNum("../tot_info_Tc", failNum, succNum);
 			as.accResult(failNum, succNum, result);	
         try{
-            as.Rank(result,200);
+            as.Rank(result);
 		}catch(Exception e)
         {
             e.printStackTrace();
