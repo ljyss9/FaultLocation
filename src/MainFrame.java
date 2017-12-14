@@ -60,6 +60,8 @@ public class MainFrame {
     private static final int TESTCASENUM = 1052;
     private static final int line = 406;
 
+    private runStatus projectStatus;
+
 
     private double finalResult[];
 
@@ -144,6 +146,7 @@ public class MainFrame {
 
     private  MainFrame() {
 
+        projectStatus = new runStatus();
 
         frame = new JFrame("缺陷定位");
         text1 = new TextArea();
@@ -163,7 +166,7 @@ public class MainFrame {
         file_save = new JMenuItem("保存");
         // importTestCase = new JMenuItem("导入测试用例");
         exectTestCase = new JMenuItem("执行测试用例");
-        selectTestcase = new JMenuItem("精简测试用例");
+        selectTestcase = new JMenuItem("测试用例预处理");
         getTestCasePath = new JMenuItem("获得用例执行路径");
         slice = new JMenuItem("切片化简程序");
         faultLocation = new JMenu("缺陷定位");
@@ -174,7 +177,7 @@ public class MainFrame {
         jresultShow = new JMenu("结果展示");
         testCaseResult = new JMenuItem("测试用例执行结果");
         execPathResult = new JMenuItem("用例运行路径结果");
-        succTestcaseResult = new JMenuItem("用例筛选结果");
+        succTestcaseResult = new JMenuItem("用例权重结果");
         sliceFaultLocation = new JMenuItem("切片化程序结果");
         locationResult = new JMenuItem("缺陷定位结果");
         jresultShow.add(testCaseResult);
@@ -222,6 +225,7 @@ public class MainFrame {
         myEvent_sampleAccSupi();
         myEvent_showExePath();
         myEvent_showRank();
+        myEvent_showTestRant();
     }
 
     // 导入文件事件
@@ -337,22 +341,31 @@ public class MainFrame {
                 // TODO Auto-generated method stub
                 text2.append(">>>开始执行精简用例 ...\n");
                 selectSample ss = new selectSample( i + "");
-                ss.accAll("v" + i);
-                System.out.println("ALL testcase"+ ss.selectSa.size());
-                List<Integer> tt = new ArrayList<>(ss.selectSa);
-
-                Collections.sort(tt);
-                String writeName = "Sample_"+i;
-                try{
-                    FileWriter fw = new FileWriter(writeName);
-                    for(int j :tt)
-                    {
-                        fw.write(j+"\n");
-                    }
-                    fw.close();
-                }catch(Exception ex){
-                    ex.printStackTrace();
+                List<Map.Entry<Integer,Double>> infoIds =
+                    new ArrayList<Map.Entry<Integer,Double>>(ss.storeNum.entrySet());
+            Collections.sort(infoIds, new Comparator<Map.Entry<Integer, Double>>() {
+                public int compare(Map.Entry<Integer, Double> o1, Map.Entry<Integer, Double> o2) {
+                    //return (o2.getValue() - o1.getValue());
+                    return (o1.getKey() - o2.getKey());
                 }
+            });
+            int acc = 0;
+            System.out.println(infoIds.size());
+            try{
+                FileWriter fw = new FileWriter("/home/ljy/FaultLocation/outputs/Sample_"+i);
+                //System.out.println(ss.storeNum.size());
+                for(Map.Entry<Integer, Double> ent : infoIds){
+                    //System.out.println(ent.getKey() + " " + ent.getValue());
+                    fw.write(ent.getValue() + "\n");
+                    //System.out.println(ent.getKey() + " " + ent.getValue());
+                    //acc++;
+
+                }
+                fw.flush();
+                fw.close();
+            }catch(Exception tt){
+                tt.printStackTrace();
+            }
                 text2.append("完成精简用例执行\n");
             }});
     }
@@ -413,6 +426,14 @@ public class MainFrame {
         execPathResult.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent arg0) {
                 new executePathFrame();
+            }
+        });
+    }
+
+    private void myEvent_showTestRant(){
+        succTestcaseResult.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+                new testCaseShow(i);
             }
         });
     }
