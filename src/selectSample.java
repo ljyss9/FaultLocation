@@ -17,7 +17,7 @@ import java.util.Set;
 
 public class selectSample {
 
-    private static final int testcase = 1606;
+    private static final int testcase = 1052;
     public ArrayList<Integer> failtestNum;
     public HashMap<Integer,Double> storeNum;
 
@@ -57,8 +57,8 @@ public class selectSample {
     public double accSame(String name,String versionName,String fail,String test){
         ArrayList<Integer> traceFail = new ArrayList<>();
         ArrayList<Integer> traceTest = new ArrayList<>();
-        String fileName1  = "/home/ljy/FaultLocation/trace/"+versionName+"/path/"+name + fail+"Path";
-        String fileName2 = "/home/ljy/FaultLocation/trace/"+versionName+"/path/"+name + test+"Path";
+        String fileName1  = "/home/ljy/FaultLocation/trace/Path/"+name + fail+"Path";
+        String fileName2 = "/home/ljy/FaultLocation/trace/Path/"+name + test+"Path";
         try {
             String encoding="GBK";
             File file=new File(fileName1);
@@ -104,7 +104,10 @@ public class selectSample {
         all.addAll(traceFail);
         all = new ArrayList<Integer>(new HashSet<Integer>(all));
         traceFail.retainAll(traceTest);
-        return (traceFail.size()*1.0) / (all.size()*1.0);
+        if(all.size() != 0)
+            return (traceFail.size()*1.0) / (all.size()*1.0);
+        else
+            return 0;
     }
 
     public void accAll(String versionName){
@@ -120,7 +123,8 @@ public class selectSample {
                     temp += accSame("tot_info_Tc",versionName,failtestNum.get(j)+"",i+"");
                 }
             }
-            temp /= all;
+            if(all != 0)
+                temp /= all;
             storeNum.put(i,temp);
         }
 //			List<Map.Entry<Integer,Double>> infoIds =
