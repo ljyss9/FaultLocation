@@ -59,6 +59,7 @@ public class MainFrame {
     private static final String file2 = "/home/ljy/FaultLocation/outputs/testcase";
     private static final int TESTCASENUM = 1052;
     private static final int line = 406;
+    private List<Integer> slicePath;
 
     private runStatus projectStatus;
 
@@ -147,6 +148,7 @@ public class MainFrame {
     private  MainFrame() {
 
         projectStatus = new runStatus();
+        slicePath = new ArrayList<>();
 
         frame = new JFrame("缺陷定位");
         text1 = new TextArea();
@@ -168,7 +170,7 @@ public class MainFrame {
         exectTestCase = new JMenuItem("执行测试用例");
         selectTestcase = new JMenuItem("测试用例预处理");
         getTestCasePath = new JMenuItem("获得用例执行路径");
-        slice = new JMenuItem("切片化简程序");
+        slice = new JMenuItem("切片动态执行用例");
         faultLocation = new JMenu("缺陷定位");
         baseFaultLocation = new JMenuItem("程序频谱技术缺陷定位");
         testFaultLocation = new JMenuItem("测试用例改进缺陷定位");
@@ -177,11 +179,13 @@ public class MainFrame {
         jresultShow = new JMenu("结果展示");
         testCaseResult = new JMenuItem("测试用例执行结果");
         execPathResult = new JMenuItem("用例运行路径结果");
+        sliceResult = new JMenuItem("动态切片执行结果");
         succTestcaseResult = new JMenuItem("用例权重结果");
         sliceFaultLocation = new JMenuItem("切片化程序结果");
         locationResult = new JMenuItem("缺陷定位结果");
         jresultShow.add(testCaseResult);
         jresultShow.add(execPathResult);
+        jresultShow.add(sliceResult);
         jresultShow.add(succTestcaseResult);
         jresultShow.add(sliceFaultLocation);
         jresultShow.add(locationResult);
@@ -226,6 +230,8 @@ public class MainFrame {
         myEvent_showExePath();
         myEvent_showRank();
         myEvent_showTestRant();
+        myEvent_sliceExecPath();
+        myEvent_showSliceResult();
     }
 
     // 导入文件事件
@@ -274,10 +280,11 @@ public class MainFrame {
                     // 抛出文件路径找不到异常
                     e1.printStackTrace();
                 }
-
+                projectStatus.setLoadFile(true);
             }
 
         });
+
     }
 
     //程序退出
@@ -291,11 +298,17 @@ public class MainFrame {
 
     //执行测试用例，调用shell脚本
     private void myEvent_execTestCase(){
+
         exectTestCase.addActionListener(new ActionListener(){
 
             @Override
             public void actionPerformed(ActionEvent e) {
+               // System.out.println(projectStatus);
                 // TODO Auto-generated method stub
+                if(!projectStatus.isLoadFile()){
+                    new errorWindow("在执行测试用例之前，请先导入测试程序!");
+                }
+                else{
                 openDia.setVisible(true);
 
                 String dirPath = openDia.getDirectory();
@@ -328,7 +341,8 @@ public class MainFrame {
                 int wrong = showDiff.getDiff(file1,file2, i );
                 int right = Integer.parseInt(ss[2]) - wrong;
                 text2.append("其中成功用例:"+ right +" 失败用例："+wrong + "\n");
-            }});
+                projectStatus.setRunTestCase(true);
+            }}});
     }
 
 
@@ -339,8 +353,16 @@ public class MainFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // TODO Auto-generated method stub
-                text2.append(">>>开始执行精简用例 ...\n");
+                if(!projectStatus.isRunTestCase()){
+                    new errorWindow("在执行用例预处理之前，请先执行测试用例!");
+                }
+                else if(!projectStatus.isGetTestPath()){
+                    new errorWindow("在执行用例预处理之前，请先获得测试用例路径!");
+                }
+                else{
+                text2.append(">>>开始执行用例预处理 ...\n");
                 selectSample ss = new selectSample( i + "");
+                ss.accAll(i+"");
                 List<Map.Entry<Integer,Double>> infoIds =
                     new ArrayList<Map.Entry<Integer,Double>>(ss.storeNum.entrySet());
             Collections.sort(infoIds, new Comparator<Map.Entry<Integer, Double>>() {
@@ -366,17 +388,22 @@ public class MainFrame {
             }catch(Exception tt){
                 tt.printStackTrace();
             }
-                text2.append("完成精简用例执行\n");
-            }});
+                text2.append("完成用例预处理执行\n");
+                projectStatus.setRateTestcase(true);
+            }}});
     }
 
-    //执行测试用例，调用shell脚本
+    //执行测试用例路径，调用shell脚本
     private void myEvent_getExecPath(){
         getTestCasePath.addActionListener(new ActionListener(){
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
+                // TODO Auto-generated method
+                if(!projectStatus.isRunTestCase()){
+                    new errorWindow("在获得用例路径之前，请先执行测试用例!");
+                }
+                else{
                 openDia.setVisible(true);
 
                 String dirPath = openDia.getDirectory();
@@ -405,19 +432,55 @@ public class MainFrame {
                     exc.printStackTrace();
                 }
                 getLine gl = new getLine();
-                String filePrefix = "/home/ljy/FaultLocation/trace/tot_info_tc";
+                String filePrefix = "/home/ljy/FaultLocation/trace/" + i +"/tot_info_tc";
                 for(int i = 1;i <=TESTCASENUM;i++){
                     gl.getExec((filePrefix + i + ".c.gcov"),i);
                 }
                 text2.append("完成执行用例执行路径 ...\n");
-            }});
+                    projectStatus.setGetTestPath(true);
+                }}});
+    }
+
+    //动态切片执行用例
+    private void myEvent_sliceExecPath(){
+        slice.addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO Auto-generated method
+                sliceExec slicer = new sliceExec();
+                slicePath = slicer.getSlice("/home/ljy/FaultLocation/outputs/slicePath");
+                for(int i = 1;i <= TESTCASENUM; i++){
+                    text2.append("动态切片执行用例" + i + "\n");
+                }
+                projectStatus.setDymaticSlice(true);
+                }});
+    }
+
+    //展示切片结果
+    private void myEvent_showSliceResult(){
+        sliceResult.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+                if(!projectStatus.isDymaticSlice()){
+                    new errorWindow("在展示切片结果之前，请先执行动态切片!");
+                }
+                else {
+                    new sliceShow(slicePath);
+                }
+            }
+        });
     }
 
     //展示执行结果
     private void myEvent_showResult(){
         testCaseResult.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent arg0) {
-                new ResultFrame();
+                if(!projectStatus.isRankList()){
+                    new errorWindow("在展示定位结果之前，请先执行缺陷定位!");
+                }
+                else {
+                    new ResultFrame();
+                }
             }
         });
     }
@@ -425,7 +488,12 @@ public class MainFrame {
     private void myEvent_showExePath(){
         execPathResult.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent arg0) {
-                new executePathFrame();
+                if(!projectStatus.isGetTestPath()){
+                    new errorWindow("在展示执行结果之前，请先执行获得路径!");
+                }
+                else {
+                    new executePathFrame();
+                }
             }
         });
     }
@@ -433,7 +501,11 @@ public class MainFrame {
     private void myEvent_showTestRant(){
         succTestcaseResult.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent arg0) {
-                new testCaseShow(i);
+                if(!projectStatus.isRateTestcase()){
+                    new errorWindow("在展示结果之前，请先执行用例预处理!");
+                }else{
+                    new testCaseShow(i);
+                }
             }
         });
     }
@@ -441,8 +513,11 @@ public class MainFrame {
     private void myEvent_showRank(){
         locationResult.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent arg0) {
-                if(finalResult != null && finalResult.length !=0 ){
+                if(projectStatus.isRankList()){
                     new finalResultShow(finalResult);
+                }
+                else{
+                    new errorWindow("在展示结果之前，请先执行缺陷定位!");
                 }
             }
         });
@@ -493,6 +568,7 @@ public class MainFrame {
             e.printStackTrace();
         }
             text2.append(">>>缺陷定位完成\n");
+
             }
 
         });
