@@ -4,19 +4,23 @@
 
 
 import javax.swing.*;
-import java.awt.TextArea;
-import java.awt.FileDialog;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 import java.util.ArrayList;
+import java.util.List;
+
 import location.*;
 
 public class MainFrame {
 
 
-    private final HashSet<String> keyWords = new HashSet<String>(){{add("auto");
+    private final ArrayList<String> keyWords = new ArrayList<String>(){{add("auto");
         add("break");add("case");add("char");add("const");add("continue");
         add("default");add("do");add("double");add("else");add("enum");add("extern");
         add("float");add("for");add("goto");add("if");add("int");add("long");add("register");
@@ -49,7 +53,9 @@ public class MainFrame {
     private JMenuItem succTestcaseResult;
     private JMenuItem sliceResult;
     private JMenuItem locationResult;
-    private TextArea text1;
+    private JMenu intr;
+    private JMenuItem sh;
+    private JTextPane text1;
     private TextArea text2;
     private TextArea text3;
     private FileDialog openDia, saveDia;
@@ -60,17 +66,25 @@ public class MainFrame {
     private static final int TESTCASENUM = 1052;
     private static final int line = 406;
     private List<Integer> slicePath;
+    private JToolBar toolBar ;
+    private URL dkUrl;
+    private URL tcUrl;
+    private URL ruUrl;
+    private JLabel font;
+    private JLabel biaozhun;
+    private JComboBox ziFont;
+    private JComboBox ziSize;
+    private JComboBox gongshi;
 
     private runStatus projectStatus;
-
+    private static Style simple;
+    private static Style keyWord;
+    private static Style change;
 
     private double finalResult[];
 
     public static final int i = 1;
 
-    public HashSet<String> getKeyWords() {
-        return keyWords;
-    }
 
     public JFrame getFrame() {
         return frame;
@@ -116,7 +130,7 @@ public class MainFrame {
         return faultLocation;
     }
 
-    public TextArea getText1() {
+    public JTextPane getText1() {
         return text1;
     }
 
@@ -141,6 +155,8 @@ public class MainFrame {
 
     private static MainFrame mainFrame = new MainFrame();
 
+
+
     public static MainFrame getInstance(){
         return  mainFrame;
     }
@@ -151,12 +167,18 @@ public class MainFrame {
         slicePath = new ArrayList<>();
 
         frame = new JFrame("缺陷定位");
-        text1 = new TextArea();
+        text1 = new JTextPane();
         text2 = new TextArea();
         text3 = new TextArea();
+        initBar();
+        frame.getContentPane().add(toolBar,BorderLayout.NORTH);
 
 
         JSplitPane jsplitPanev = new JSplitPane(JSplitPane.VERTICAL_SPLIT,false,text1,text2);
+        JScrollPane jScrollPane = new JScrollPane(text1,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                                    JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        jScrollPane.setVisible(true);
+        jsplitPanev.add(jScrollPane);
         jsplitPanev.setDividerLocation(500);
         frame.getContentPane().add(jsplitPanev);
 
@@ -217,6 +239,7 @@ public class MainFrame {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setBounds(100 , 100 , LENGTH , WIDTH);
 
+        initStyle();
         myEvent_openfile();
         myEvent_exit();
         myEvent_execTestCase();
@@ -234,6 +257,51 @@ public class MainFrame {
         myEvent_showSliceResult();
     }
 
+
+    public void  initBar(){
+        JLabel jLabel = new JLabel("             ");
+        toolBar =new JToolBar();
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        dkUrl = loader.getResource("open.jpg");
+        tcUrl = loader.getResource("exit.jpg");
+        ruUrl = loader.getResource("run.jpg");
+        font = new JLabel("字体：");
+        String sZi[] ={"宋体","楷体","Cambria"};
+        String sSize[] = {"10","12","14","16"};
+        ziFont = new JComboBox(sZi);
+        ziSize = new JComboBox(sSize);
+        toolBar.add(font);
+        toolBar.add(ziFont);
+        toolBar.addSeparator(new Dimension(20,8));
+        toolBar.add(ziSize);
+        biaozhun = new JLabel("怀疑的公式：");
+        String sGongShi[] = {"Tarantula","Ochiai","Ample","Jaccard","Braun",
+                "Mountford"};
+        gongshi = new JComboBox(sGongShi);
+        //toolBar.add(jLabel);
+        toolBar.addSeparator(new Dimension(100,8));
+        toolBar.add(biaozhun);
+        toolBar.add(gongshi);
+        toolBar.addSeparator(new Dimension(150,8));
+        JButton dkButton = new JButton(new ImageIcon(dkUrl));
+        JButton ruButton = new JButton(new ImageIcon(ruUrl));
+        JButton tcButton = new JButton(new ImageIcon(tcUrl));
+        toolBar.add(dkButton);
+        toolBar.add(ruButton);
+        toolBar.add(tcButton);
+        toolBar.addSeparator(new Dimension(10,8));
+        toolBar.setVisible(true);
+    }
+    private void initStyle(){
+        simple = text1.getStyledDocument().addStyle(null,null);
+        StyleConstants.setFontFamily(simple,"New Roman");
+        StyleConstants.setFontSize(simple,14);
+        Style style = text1.addStyle("style",simple);
+        keyWord = text1.addStyle("keyword",style);
+        //StyleConstants.setForeground(keyWord,Color.CYAN);
+        StyleConstants.setBold(keyWord,true);
+    }
+
     // 导入文件事件
     private void myEvent_openfile() {
     /*    Style style = text1.getStyledDocument().addStyle(null, null);
@@ -241,11 +309,11 @@ public class MainFrame {
         StyleConstants.setFontSize(style, 14);
         final Style simple = text1.addStyle("simple",style);
         final Style keyWord = text1.addStyle("keyWord",style);
-        final String changeLine = "\n";
+
         StyleConstants.setForeground(keyWord, Color.blue);
         StyleConstants.setBold(keyWord , true);
     */
-
+        final String changeLine = "\n";
         file_open.addActionListener(new ActionListener() {
 
             @Override
@@ -265,20 +333,30 @@ public class MainFrame {
                     BufferedReader buread = new BufferedReader(new FileReader(file));
                     String line = null;
                     while ((line = buread.readLine()) != null) {
-                      /*  String lines[] = line.split(" ");
+                        String lines[] = line.split(" ");
+                        String  ss ="";
                         for(String temp : lines) {
-                            if(keyWords.contains(temp))
-                                docs.insertString(docs.getLength(), temp + " ", keyWord);
-                            else
-                                docs.insertString(docs.getLength(),temp + " ",simple);
+                            for(String key : keyWords){
+                                if(temp.contains(key)){
+                                    text1.getStyledDocument().insertString(text1.getStyledDocument().getLength(),
+                                            temp + " ", keyWord);
+                                    ss = key;
+                                    break;
+                                }
+                            }
+                            if(ss.length() == 0)
+                                text1.getStyledDocument().insertString(text1.getStyledDocument().getLength(),
+                                        temp + " ", simple);
+
                         }
-                        docs.insertString(docs.getLength(),changeLine,simple);
-                        */
-                        text1.append(line + "\n");
+                        text1.getStyledDocument().insertString(text1.getStyledDocument().getLength(),
+                                changeLine,simple);
                     }
                 } catch (IOException e1) {
                     // 抛出文件路径找不到异常
                     e1.printStackTrace();
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
                 projectStatus.setLoadFile(true);
             }
