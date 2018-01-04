@@ -9,6 +9,8 @@ import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
@@ -55,10 +57,14 @@ public class MainFrame {
     private JMenuItem locationResult;
     private JMenu intr;
     private JMenuItem sh;
+    private JMenuItem about;
     private JTextPane text1;
     private TextArea text2;
     private TextArea text3;
     private FileDialog openDia, saveDia;
+    private JButton dkButton;
+    private JButton ruButton;
+    private JButton tcButton;
     private static final int LENGTH = 800;
     private static final int WIDTH = 700;
     private static final String file1 = "/home/ljy/FaultLocation/outputs/testcase_original";
@@ -77,6 +83,7 @@ public class MainFrame {
     private JComboBox gongshi;
 
     private runStatus projectStatus;
+    private String gongshiSel;
     private static Style simple;
     private static Style keyWord;
     private static Style change;
@@ -164,6 +171,7 @@ public class MainFrame {
     private  MainFrame() {
 
         projectStatus = new runStatus();
+        gongshiSel = new String("Tarantula");
         slicePath = new ArrayList<>();
 
         frame = new JFrame("缺陷定位");
@@ -205,6 +213,9 @@ public class MainFrame {
         succTestcaseResult = new JMenuItem("用例权重结果");
         sliceFaultLocation = new JMenuItem("切片化程序结果");
         locationResult = new JMenuItem("缺陷定位结果");
+        intr = new JMenu("帮助");
+        sh = new JMenuItem("使用说明");
+        about = new JMenuItem("关于SIFL缺陷定位");
         jresultShow.add(testCaseResult);
         jresultShow.add(execPathResult);
         jresultShow.add(sliceResult);
@@ -222,6 +233,8 @@ public class MainFrame {
         jmenuproject.add(selectTestcase);
         jmenuproject.add(slice);
         jmenuproject.add(faultLocation);
+        intr.add(sh);
+        intr.add(about);
         jmenufile.add(file_open);
         jmenufile.add(file_save);
         jmenufile.add(exit);
@@ -230,6 +243,7 @@ public class MainFrame {
         bar.add(jmenufile);
         bar.add(jmenuproject);
         bar.add(jresultShow);
+        bar.add(intr);
         //frame.add(text3);
         //frame.add(panel);
         frame.setJMenuBar(bar);
@@ -255,6 +269,12 @@ public class MainFrame {
         myEvent_showTestRant();
         myEvent_sliceExecPath();
         myEvent_showSliceResult();
+        myEvent_about();
+        myEvent_intro();
+        myEvent_openfile_button();
+        myEvent_exit_button();
+        myEvent_bothAccSupi_button();
+        myEvent_gongshiSelect();
     }
 
 
@@ -276,16 +296,16 @@ public class MainFrame {
         toolBar.add(ziSize);
         biaozhun = new JLabel("怀疑的公式：");
         String sGongShi[] = {"Tarantula","Ochiai","Ample","Jaccard","Braun",
-                "Mountford"};
+                "Mountford","Rogot"};
         gongshi = new JComboBox(sGongShi);
         //toolBar.add(jLabel);
         toolBar.addSeparator(new Dimension(100,8));
         toolBar.add(biaozhun);
         toolBar.add(gongshi);
         toolBar.addSeparator(new Dimension(150,8));
-        JButton dkButton = new JButton(new ImageIcon(dkUrl));
-        JButton ruButton = new JButton(new ImageIcon(ruUrl));
-        JButton tcButton = new JButton(new ImageIcon(tcUrl));
+        dkButton = new JButton(new ImageIcon(dkUrl));
+        ruButton = new JButton(new ImageIcon(ruUrl));
+        tcButton = new JButton(new ImageIcon(tcUrl));
         toolBar.add(dkButton);
         toolBar.add(ruButton);
         toolBar.add(tcButton);
@@ -365,11 +385,112 @@ public class MainFrame {
 
     }
 
+
+    private void myEvent_openfile_button() {
+    /*    Style style = text1.getStyledDocument().addStyle(null, null);
+        StyleConstants.setFontFamily(style, "楷体");
+        StyleConstants.setFontSize(style, 14);
+        final Style simple = text1.addStyle("simple",style);
+        final Style keyWord = text1.addStyle("keyWord",style);
+
+        StyleConstants.setForeground(keyWord, Color.blue);
+        StyleConstants.setBold(keyWord , true);
+    */
+        final String changeLine = "\n";
+        dkButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                // TODO Auto-generated method stub
+                openDia.setVisible(true);
+
+                String dirPath = openDia.getDirectory();
+                String fileName = openDia.getFile();
+                if (dirPath == null || fileName == null) {
+                    return;
+                } else
+                    text1.setText(null);
+
+                File file = new File(dirPath, fileName);
+                try {
+                    BufferedReader buread = new BufferedReader(new FileReader(file));
+                    String line = null;
+                    while ((line = buread.readLine()) != null) {
+                        String lines[] = line.split(" ");
+                        String  ss ="";
+                        for(String temp : lines) {
+                            for(String key : keyWords){
+                                if(temp.contains(key)){
+                                    text1.getStyledDocument().insertString(text1.getStyledDocument().getLength(),
+                                            temp + " ", keyWord);
+                                    ss = key;
+                                    break;
+                                }
+                            }
+                            if(ss.length() == 0)
+                                text1.getStyledDocument().insertString(text1.getStyledDocument().getLength(),
+                                        temp + " ", simple);
+
+                        }
+                        text1.getStyledDocument().insertString(text1.getStyledDocument().getLength(),
+                                changeLine,simple);
+                    }
+                } catch (IOException e1) {
+                    // 抛出文件路径找不到异常
+                    e1.printStackTrace();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+                projectStatus.setLoadFile(true);
+            }
+
+        });
+
+    }
+
     //程序退出
     private void myEvent_exit(){
         exit.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent arg0) {
                 System.exit(0);
+            }
+        });
+    }
+
+    //图标退出
+    private void myEvent_exit_button(){
+        tcButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+                System.exit(0);
+            }
+        });
+    }
+
+
+    private void myEvent_gongshiSelect(){
+        gongshi.addItemListener(new ItemListener() {
+            @Override
+             public void itemStateChanged(ItemEvent e) {
+                 gongshiSel= gongshi.getSelectedItem().toString();
+                 System.out.println(gongshiSel);
+                }
+             });
+    }
+
+    //关于程序介绍
+    private void myEvent_about(){
+        about.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+                new aboutFrame();
+            }
+        });
+    }
+
+    //程序使用说明
+    private void myEvent_intro(){
+        sh.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+                new shuomingFrame();
             }
         });
     }
@@ -634,7 +755,7 @@ public class MainFrame {
 			int succNum [] = new int[line + 1];
 			int failNum [] = new int[line + 1];
 			double result[] = new double[line+1];
-			AccSupi as = new AccSupi(store,j);
+			AccSupi as = new AccSupi(store,j,gongshiSel);
 			as.accNum("/home/ljy/FaultLocation/trace/Path/tot_info_Tc", failNum, succNum);
 			as.accResult(failNum, succNum, result);
 			finalResult = new double[result.length];
@@ -685,7 +806,7 @@ public class MainFrame {
                 int succNum [] = new int[line + 1];
                 int failNum [] = new int[line + 1];
                 double result[] = new double[line+1];
-                useSliceAccSupi as = new useSliceAccSupi(store,j);
+                useSliceAccSupi as = new useSliceAccSupi(store,j,gongshiSel);
                 as.accNum("/home/ljy/FaultLocation/trace/Path/tot_info_Tc", failNum, succNum);
                 as.accResult(failNum, succNum, result);
                 finalResult = new double[result.length];
@@ -735,7 +856,7 @@ public class MainFrame {
                 int succNum [] = new int[line + 1];
                 int failNum [] = new int[line + 1];
                 double result[] = new double[line+1];
-                useSamAccSupi as = new useSamAccSupi(store,j);
+                useSamAccSupi as = new useSamAccSupi(store,j,gongshiSel);
                 as.accNum("/home/ljy/FaultLocation/trace/Path/tot_info_Tc", failNum, succNum);
                 as.accResult(failNum, succNum, result);
                 finalResult = new double[result.length];
@@ -754,6 +875,55 @@ public class MainFrame {
 
     private void myEvent_bothAccSupi(){
         bothFaultLocation.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+                int store[] = new int[300];
+
+                int j = 0;
+                String fileName  = "/home/ljy/FaultLocation/DiffSourToV";
+                fileName = fileName + i+"";
+                text2.append(">>>开始SIFL技术定位缺陷\n");
+                try {
+                    String encoding="GBK";
+                    File file=new File(fileName);
+                    if(file.isFile() && file.exists()){
+                        InputStreamReader read = new InputStreamReader(
+                                new FileInputStream(file),encoding);
+                        BufferedReader bufferedReader = new BufferedReader(read);
+                        String lineTxt = null;
+                        while((lineTxt = bufferedReader.readLine()) != null){
+                            store[j] = Integer.parseInt(lineTxt);
+                            j++;
+                        }
+                        read.close();
+
+                    }else{
+                        System.out.println("cannot find file");
+                    }
+                } catch (Exception e) {
+                    System.out.println("occur error when reading file");
+                    e.printStackTrace();
+                }
+                int succNum [] = new int[line + 1];
+                int failNum [] = new int[line + 1];
+                double result[] = new double[line+1];
+                useBothAccSupi as = new useBothAccSupi(store,j,gongshiSel);
+                as.accNum("/home/ljy/FaultLocation/trace/Path/tot_info_Tc", failNum, succNum);
+                as.accResult(failNum, succNum, result);
+                try{
+                    as.Rank(result);
+                }catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
+                text2.append(">>>缺陷定位完成\n");
+            }
+
+        });
+    }
+
+    //计算怀疑度button
+    private void myEvent_bothAccSupi_button(){
+        ruButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent arg0) {
                 int store[] = new int[300];
 
